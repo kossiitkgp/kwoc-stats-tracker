@@ -14,7 +14,7 @@ The following stats are tracked:
   - Pull count
   - Lines added
   - Lines removed
-  - Contributors
+  - List of contributors
   - List of pull requests
 - **Per student:**
   - Commit count
@@ -30,6 +30,20 @@ The following stats are tracked:
   - Lines added
   - Lines removed
 
+## Running Mid-Evals and End-Evals
+
+There are two auxiliary scripts in the `src/bin` directory, for running the mid-evals and end-evals respectively. These scripts are used to update the database with the results of the mid-evals and end-evals.
+
+- Set up the development environment as described below.
+- To run the mid-evals, run `cargo run --bin run-mid-evals`.
+- To run the end-evals, run `cargo run --bin run-end-evals`.
+
+> [!NOTE]
+> These scripts are to be run once per season. They can only be run manually since they require user interaction.
+
+> [!WARNING]
+> Note that the tracker script runs periodically and will update the database with information about new PRs that are merged after the mid-evals deadline. So, it is to be ensured that the mid-evals script is run at an appropriate time, or in case of any delay, the timeline is adjusted accordingly.
+
 ## Development
 
 1. Clone the repository
@@ -37,19 +51,22 @@ The following stats are tracked:
 
 ```
 GITHUB_TOKEN=<your github token>
-START_TIME=<start time of the KWoC coding period>
-END_TIME=<end time of the KWoC coding period>
+START_TIME=<start time of KWoC Coding Period>
+MID_EVALS_TIME=
+END_EVALS_TIME=
 
 DATABASE_HOST=<database host>
 DATABASE_PORT=<database port>
 DATABASE_NAME=<database name>
 DATABASE_USERNAME=<database username>
 DATABASE_PASSWORD=<database password>
+
+MID_EVALS_ENDED=false
 ```
 
   - The database is the same as the one used by [KWoC Backend](https://github.com/kossiitkgp/KWoC-Backend). 
   - Create a GitHub personal access token, and add it to the `.env` file.
-  - The start and end times are in UTC. (e.g. `2025-12-05T00:00:00Z`)
+  - The times should be in UTC. (e.g. `2025-12-05T00:00:00Z`)
 
 3. Run `cargo run`
 

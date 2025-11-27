@@ -2,6 +2,7 @@
 name = "kwoc-stats-tracker"
 version = "0.1.0"
 edition = "2024"
+default-run = "kwoc-stats-tracker"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
