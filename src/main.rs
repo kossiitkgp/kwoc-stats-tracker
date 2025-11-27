@@ -19,6 +19,10 @@ async fn main() -> anyhow::Result<()> {
 
     let mut projects = database.get_projects().await?;
     let mut students = database.get_students().await?;
+    if env.mid_evals_ended {
+        students.retain(|s| s.passed_mid_evals);
+        println!("Only including students who passed the mid-evals");
+    }
     let mut stats = if let Ok(stats) = database.get_stats().await {
         stats
     } else {

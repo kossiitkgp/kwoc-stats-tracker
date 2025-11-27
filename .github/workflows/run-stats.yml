@@ -29,3 +29,4 @@ jobs:
           DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
           DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }} 
           DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+          MID_EVALS_ENDED: ${{ vars.MID_EVALS_ENDED }}
