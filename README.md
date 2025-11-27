@@ -1,0 +1,58 @@
+# KWoC Stats Tracker
+
+A rust script to track student's pull requests and commits to projects for KWoC (Kharagpur Winter of Code). Successor to [v2](https://github.com/kossiitkgp/kwoc-stats-api), written in Go.
+
+## How the script works
+
+The script is periodically run by a cron job (via GitHub Actions). It fetches all projects and students from the database, and then checks for new commits and pull requests for each project and student. The updated statistics are then stored in the database. 
+
+The script also stores a `last_pull_time` field of each project to the latest time a pull request was merged. This is used to determine which pull requests are new and should be considered for the updated statistics.
+
+The following stats are tracked:
+- **Per project:**
+  - Commit count
+  - Pull count
+  - Lines added
+  - Lines removed
+  - Contributors
+  - List of pull requests
+- **Per student:**
+  - Commit count
+  - Pull count
+  - Lines added
+  - Lines removed
+  - Languages used
+  - Projects worked on
+  - List of pull requests
+- **Overall:**
+  - Commit count
+  - Pull count
+  - Lines added
+  - Lines removed
+
+## Development
+
+1. Clone the repository
+2. Create a `.env` file in the root directory with the following content:
+
+```
+GITHUB_TOKEN=<your github token>
+START_TIME=<start time of the KWoC coding period>
+END_TIME=<end time of the KWoC coding period>
+
+DATABASE_HOST=<database host>
+DATABASE_PORT=<database port>
+DATABASE_NAME=<database name>
+DATABASE_USERNAME=<database username>
+DATABASE_PASSWORD=<database password>
+```
+
+  - The database is the same as the one used by [KWoC Backend](https://github.com/kossiitkgp/KWoC-Backend). 
+  - Create a GitHub personal access token, and add it to the `.env` file.
+  - The start and end times are in UTC. (e.g. `2025-12-05T00:00:00Z`)
+
+3. Run `cargo run`
+
+------
+
+>  Please update this documentation if you make changes to the code or any other part of the stats generation process. Future humans will praise you.
