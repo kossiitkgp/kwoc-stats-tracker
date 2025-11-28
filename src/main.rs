@@ -12,6 +12,12 @@ async fn main() -> anyhow::Result<()> {
 
     let env = env::Env::new();
 
+    let now = chrono::Utc::now();
+    if now < env.start_time {
+        println!("Current time is before start time");
+        return Ok(());
+    }
+
     let database = db::Database::new(&env).await?;
 
     let gh = github::GitHub::new(&env)?;
