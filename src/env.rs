@@ -13,6 +13,7 @@ pub struct Env {
     pub db_port: u16,
     pub db_name: String,
     pub mid_evals_ended: bool,
+    pub slack_webhook_url: String,
 }
 
 impl Env {
@@ -28,6 +29,7 @@ impl Env {
             db_port: env::var("DATABASE_PORT").expect("DATABASE_PORT is not set").parse::<u16>().expect("DATABASE_PORT is not valid"),
             db_name: env::var("DATABASE_NAME").expect("DATABASE_NAME is not set"),
             mid_evals_ended: env::var("MID_EVALS_ENDED").expect("MID_EVALS_ENDED is not set").parse::<bool>().expect("MID_EVALS_ENDED is not valid"),
+            slack_webhook_url: env::var("SLACK_WEBHOOK_URL").unwrap_or_default(),
         }
     }
 }

@@ -37,6 +37,8 @@ pub async fn update_stats(
     for project in &mut projects {
         let mut max_merge_time = project.last_pull_time;
 
+        let existing_pulls: HashSet<String> = HashSet::from_iter(project.pulls.iter().cloned());
+
         let mut page = 1;
         loop {
             let mut done = false;
@@ -53,12 +55,17 @@ pub async fn update_stats(
                     continue;
                 }
 
-                // If the PR is created after the start time and merged after this script was last run,
+                let url = pr.html_url;
+
+                if existing_pulls.contains(&url) {
+                    continue;
+                }
+
+                // If the PR is created after the start time,
                 // and merged before the deadline, then update the stats for the project
                 let created_at: DateTime<Utc> = pr.created_at.parse().unwrap();
                 let merged_at: DateTime<Utc> = pr.merged_at.map(|s| s.parse().unwrap()).unwrap();
                 if created_at > env.start_time
-                    && merged_at > project.last_pull_time
                     && merged_at < deadline
                     && let Some(student) = students.iter_mut().find(|s| s.username == pr.user.login)
                 {
@@ -98,8 +105,6 @@ pub async fn update_stats(
                         }
                     }
 
-                    let url = pr.html_url;
-
                     let lines_added = lines_added as i64;
                     let lines_removed = lines_removed as i64;
 
@@ -135,6 +140,8 @@ pub async fn update_stats(
                     stats.total_lines_removed += lines_removed;
 
                     max_merge_time = max_merge_time.max(merged_at);
+
+                    println!("[KWoC-Stats] Updated new pull request for project {} by {}: {}", project.name, student.username, url);
                 }
 
                 if created_at < env.start_time {

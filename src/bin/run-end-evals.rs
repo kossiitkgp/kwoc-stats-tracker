@@ -1,4 +1,4 @@
-use kwoc_stats_tracker::{db, env, github, stats};
+use kwoc_stats_tracker::{db, env, github, stats, slack};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -16,10 +16,12 @@ async fn main() -> anyhow::Result<()> {
     let (project_count, pr_count) =
         stats::update_stats(&env, &database, &gh, env.end_evals_time).await?;
 
-    println!(
-        "Updated {} projects with {} new pull requests",
+    let msg = format!(
+        "[KWoC-Stats] Updated {} projects with {} new pull requests",
         project_count, pr_count
     );
+    println!("{}", msg);
+    let _ = slack::send_slack_message(&env.slack_webhook_url, &msg).await;
 
     println!("\n");
 
@@ -38,15 +40,26 @@ async fn main() -> anyhow::Result<()> {
 
     println!("\nDo you want to update the database? (y/n)");
     let mut input = String::new();
+    let mut passed_students = vec![];
+
     std::io::stdin().read_line(&mut input)?;
     if input.trim() == "y" {
         for student in &mut students {
             if student.passed_end_evals {
                 println!("✅ {} passed the end-evals", student.username);
+                passed_students.push(student.username.clone());
                 database.update_student(student.clone()).await?;
             }
         }
     }
+
+    let msg = format!(
+        "[KWoC-Stats] End Evaluation completed, {} students passed the end-evals:\n{}",
+        passed_students.len(),
+        passed_students.join(", ")
+    );
+    println!("{}", msg);
+    let _ = slack::send_slack_message(&env.slack_webhook_url, &msg).await;
 
     Ok(())
 }
