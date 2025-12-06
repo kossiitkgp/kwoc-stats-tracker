@@ -33,8 +33,10 @@ impl Database {
                 .await?;
 
         for db_project in db_projects {
-            let project = Project::from(db_project);
-            projects.push(project);
+            let project: Result<Project, _> = db_project.into();
+            if let Ok(project) = project {
+                projects.push(project);
+            }
         }
 
         Ok(projects)
@@ -108,7 +110,7 @@ impl Database {
     /// Update overall stats.
     pub async fn update_stats(&self, stats: Stats) -> anyhow::Result<()> {
         let mut query_sql = "INSERT INTO stats (total_commit_count, total_pull_count, total_lines_added, total_lines_removed) VALUES ($1, $2, $3, $4)";
-        if let Ok(_) = self.get_stats().await {
+        if self.get_stats().await.is_ok() {
             query_sql = "UPDATE stats SET total_commit_count = $1, total_pull_count = $2, total_lines_added = $3, total_lines_removed = $4";
         }
         let query = sqlx::query(

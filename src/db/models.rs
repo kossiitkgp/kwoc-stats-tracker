@@ -1,4 +1,5 @@
 //! Database models
+use anyhow::Error;
 use reqwest::Url;
 use sqlx::FromRow;
 
@@ -52,13 +53,14 @@ pub struct Project {
     pub repo_name: String,
 }
 
-impl From<DBProject> for Project {
+impl From<DBProject> for Result<Project, Error> {
     fn from(db_project: DBProject) -> Self {
-        let repo_url= Url::parse(&db_project.repo_link).unwrap();
-        let mut segments = repo_url.path_segments().unwrap();
-        let repo_owner = segments.next().unwrap();
-        let repo_name = segments.last().unwrap();
-        Self {
+        let repo_url= Url::parse(&db_project.repo_link)?;
+        let mut segments = repo_url.path_segments().ok_or(Error::msg("Failed to parse repo link"))?;
+        let repo_owner = segments.next().ok_or(Error::msg("Failed to parse repo link"))?;
+        let repo_name = segments.next().ok_or(Error::msg("Failed to parse repo link"))?;
+
+        Ok(Project {
             id: db_project.id,
             name: db_project.name,
             description: db_project.description,
@@ -68,7 +70,7 @@ impl From<DBProject> for Project {
             readme_link: db_project.readme_link,
             project_status: db_project.project_status,
             status_remark: db_project.status_remark,
-            last_pull_time: chrono::DateTime::<chrono::Utc>::from_timestamp(db_project.last_pull_time, 0).unwrap(),
+            last_pull_time: chrono::DateTime::<chrono::Utc>::from_timestamp(db_project.last_pull_time, 0).expect("last_pull_time should be a valid timestamp"),
             commit_count: db_project.commit_count,
             pull_count: db_project.pull_count,
             lines_added: db_project.lines_added,
@@ -79,7 +81,7 @@ impl From<DBProject> for Project {
             secondary_mentor_id: db_project.secondary_mentor_id,
             repo_owner: repo_owner.to_string(),
             repo_name: repo_name.to_string(),
-        }
+        })
     }
 }
 
@@ -100,8 +102,8 @@ impl From<Project> for DBProject {
             pull_count: project.pull_count,
             lines_added: project.lines_added,
             lines_removed: project.lines_removed,
-            contributors: project.contributors.iter().map(|s| s.as_str()).filter(|l| l.len() > 0).collect::<Vec<&str>>().join(","),
-            pulls: project.pulls.iter().map(|p| p.as_str()).filter(|p| p.len() > 0).collect::<Vec<&str>>().join(","),
+            contributors: project.contributors.iter().map(|s| s.as_str()).filter(|l| !l.is_empty()).collect::<Vec<&str>>().join(","),
+            pulls: project.pulls.iter().map(|p| p.as_str()).filter(|p| !p.is_empty()).collect::<Vec<&str>>().join(","),
             mentor_id: project.mentor_id,
             secondary_mentor_id: project.secondary_mentor_id,
         }
@@ -192,9 +194,9 @@ impl From<Student> for DBStudent {
             pull_count: student.pull_count,
             lines_added: student.lines_added,
             lines_removed: student.lines_removed,
-            languages_used: student.languages_used.iter().map(|s| s.as_str()).filter(|l| l.len() > 0).collect::<Vec<&str>>().join(","),
-            projects_worked: student.projects_worked.iter().map(|p| p.to_string()).filter(|p| p.len() > 0).collect::<Vec<String>>().join(","),
-            pulls: student.pulls.iter().map(|p| p.as_str()).filter(|p| p.len() > 0).collect::<Vec<&str>>().join(","),
+            languages_used: student.languages_used.iter().map(|s| s.as_str()).filter(|l| !l.is_empty()).collect::<Vec<&str>>().join(","),
+            projects_worked: student.projects_worked.iter().map(|p| p.to_string()).filter(|p| !p.is_empty()).collect::<Vec<String>>().join(","),
+            pulls: student.pulls.iter().map(|p| p.as_str()).filter(|p| !p.is_empty()).collect::<Vec<&str>>().join(","),
         }
     }
 }

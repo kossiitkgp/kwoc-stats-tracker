@@ -1,7 +1,9 @@
 [package]
 name = "kwoc-stats-tracker"
+description = "A rust script to track student's pull requests and commits to projects for KWoC."
 version = "0.1.0"
 edition = "2024"
+license = "GPL-3.0"
 default-run = "kwoc-stats-tracker"
 
 [dependencies]

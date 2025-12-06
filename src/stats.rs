@@ -47,7 +47,7 @@ pub async fn update_stats(
             let pull_requests = gh
                 .get_project_pull_requests(&project.repo_owner, &project.repo_name, page)
                 .await?;
-            if pull_requests.len() == 0 {
+            if pull_requests.is_empty() {
                 break;
             }
             for pr in pull_requests {
@@ -63,8 +63,8 @@ pub async fn update_stats(
 
                 // If the PR is created after the start time,
                 // and merged before the deadline, then update the stats for the project
-                let created_at: DateTime<Utc> = pr.created_at.parse().unwrap();
-                let merged_at: DateTime<Utc> = pr.merged_at.map(|s| s.parse().unwrap()).unwrap();
+                let created_at: DateTime<Utc> = pr.created_at.parse().expect("PR created at should be a valid date");
+                let merged_at: DateTime<Utc> = pr.merged_at.map(|s| s.parse().expect("PR merged at should be a valid date")).unwrap_or(deadline);
                 if created_at > env.start_time
                     && merged_at < deadline
                     && let Some(student) = students.iter_mut().find(|s| s.username == pr.user.login)
@@ -81,7 +81,7 @@ pub async fn update_stats(
                         .get_pull_request_files(&project.repo_owner, &project.repo_name, pr.number)
                         .await?
                     {
-                        if let Some(language) = file.filename.split('.').last() {
+                        if let Some(language) = file.filename.split('.').next_back() {
                             let language = language.to_string();
                             if !languages.contains(&language) {
                                 languages.push(language);
